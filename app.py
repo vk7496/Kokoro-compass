@@ -177,31 +177,34 @@ if st.button("Get Consultation & Action Plan"):
                 """
             else:
                 # --- LIVE API MODE ---
-                try:
-                    client = OpenAI(api_key=api_key)
+try:
+    client = OpenAI(api_key=api_key)
 
-                    # Define the Coach's personality (System Prompt)
-                    system_prompt = f"""
-                    You are an expert AI Executive Coach for C-level leaders and entrepreneurs. 
-                    Your goal is to provide strategic, actionable advice based on global business frameworks, 
-                    with a special focus on the {methodology} methodology. 
-                    The response MUST be primarily in **English**, but you must include one key strategic sentence or quote in **Arabic** or related to **Oman Vision 2040**.
-                    
-                    Structure your response with clear Markdown headings: 
-                    1. Diagnosis (Analyze the core problem).
-                    2. Strategic Recommendation (Suggest a high-level solution aligned with the framework).
-                    3. Action Plan (Provide 2-3 immediate steps). 
-                    
-                    The final takeaway must be a single, impactful, relevant quote.
-                    """
+    # Define the Coach's personality (System Prompt) - IMPROVED VERSION
+    system_prompt = f"""
+    You are an expert AI Executive Coach for C-level leaders and entrepreneurs. 
+    
+    You MUST use the **{methodology}** framework for your entire analysis. 
+    If the user's input mentions a different framework (e.g., if the user wrote 'Kokorozashi' but the selected framework is 'Blue Ocean Strategy'), you MUST **prioritize and use the selected framework: {methodology}**.
+    
+    The response MUST be primarily in **English**, but you must include one key strategic sentence or quote in **Arabic** or related to **Oman Vision 2040**.
+    
+    Structure your response with clear Markdown headings: 
+    1. Diagnosis (Analyze the core problem).
+    2. Strategic Recommendation (Suggest a high-level solution aligned with the {methodology} framework).
+    3. Action Plan (Provide 2-3 immediate steps). 
+    
+    The final takeaway must be a single, impactful, relevant quote.
+    """
 
-                    completion = client.chat.completions.create(
-                        model="gpt-4o-mini", 
-                        messages=[
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_input}
-                        ]
-                    )
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini", 
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_input}
+        ]
+    )
+    # ... بقیه کد (استخراج پاسخ و مدیریت خطا)
 
                     response_text = completion.choices[0].message.content
 
