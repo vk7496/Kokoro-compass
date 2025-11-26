@@ -51,11 +51,33 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 2. SECRETS LOADING (API KEY MANAGEMENT) ---
-# Retrieve API key from st.secrets or set to None
-if "openai_api_key" in st.secrets:
+# Retrieve API key from st.secrets. Checks for both uppercase and lowercase standards.
+
+# 1. Check for the common UPPERCASE environment variable standard
+if "OPENAI_API_KEY" in st.secrets:
+    api_key = st.secrets["OPENAI_API_KEY"]
+    
+# 2. Check for the standard Streamlit lowercase key (as fallback)
+elif "openai_api_key" in st.secrets:
     api_key = st.secrets["openai_api_key"]
+
+# 3. If neither is found, run in Demo Mode
 else:
     api_key = None
+    
+# --- 3. SIDEBAR (CONFIGURATION AND ABOUT) ---
+with st.sidebar:
+    st.title("🧭 Kokoro Compass")
+    st.caption("Navigating Leadership in the Technovate Era") 
+    
+    # Show status based on secret loading
+    if api_key:
+        st.success("API Key loaded securely. Ready for Live Mode.")
+    else:
+        st.warning("Key not found in Streamlit Secrets. Running in Demo Mode.")
+        
+    st.divider()
+    # ... (Rest of sidebar code remains the same)
 
 # --- 3. SIDEBAR (CONFIGURATION AND ABOUT) ---
 with st.sidebar:
