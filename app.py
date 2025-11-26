@@ -1,8 +1,9 @@
 import streamlit as st
 import time
 import os
+from openai import OpenAI # Import the OpenAI library
 
-# --- ۱. PAGE CONFIGURATION AND STYLING ---
+# --- 1. PAGE CONFIGURATION AND STYLING ---
 st.set_page_config(
     page_title="Kokoro Compass 🧭 | AI Executive Coach", 
     page_icon="🧭",
@@ -49,10 +50,23 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- ۲. SIDEBAR (CONFIGURATION AND ABOUT) ---
+# --- 2. SECRETS LOADING (API KEY MANAGEMENT) ---
+# Retrieve API key from st.secrets or set to None
+if "openai_api_key" in st.secrets:
+    api_key = st.secrets["openai_api_key"]
+else:
+    api_key = None
+
+# --- 3. SIDEBAR (CONFIGURATION AND ABOUT) ---
 with st.sidebar:
     st.title("🧭 Kokoro Compass")
     st.caption("Navigating Leadership in the Technovate Era") 
+    
+    # Show status based on secret loading
+    if api_key:
+        st.success("OpenAI API Key loaded securely.")
+    else:
+        st.warning("Key not found in Streamlit Secrets. Running in Demo Mode.")
     
     st.divider()
     
@@ -82,9 +96,7 @@ with st.sidebar:
         ["GLOBIS Kokorozashi", "Blue Ocean Strategy", "Emotional Intelligence", "Scenario Planning"]
     )
     
-    api_key = st.text_input("OpenAI API Key", type="password", help="Enter your key. Demo mode will activate if left blank.")
-    
-# --- ۳. MAIN APPLICATION BODY ---
+# --- 4. MAIN APPLICATION BODY ---
 
 # Header Section
 col1, col2 = st.columns([3, 1])
@@ -99,7 +111,7 @@ with col1:
     """, unsafe_allow_html=True)
 with col2:
     st.metric("Metodology Selected", methodology)
-    st.caption("System Status: Online 🟢")
+    st.caption("System Status: Ready 🟢")
     
 
 st.divider()
@@ -118,13 +130,13 @@ if st.button("Get Consultation & Action Plan"):
     else:
         # Spinner to simulate processing
         with st.spinner('Analyzing data and aligning with C-level management frameworks...'):
-            time.sleep(3) 
             
-            # --- AI Logic (Mock Response) ---
             response_text = ""
             
+            # --- AI Logic (Live vs. Mock) ---
             if not api_key:
-                # Demo response (English/Arabic)
+                # --- DEMO MODE (FALLBACK) ---
+                time.sleep(3)
                 response_text = f"""
                 ### ✅ Strategic Analysis based on {methodology}
                 
@@ -142,9 +154,40 @@ if st.button("Get Consultation & Action Plan"):
                 > **✨ Key Takeaway:** *"الاستثمار في الإنسان هو الاستثمار الأنجح لتحقيق رؤية عُمان 2040."* (Investing in people is the most successful investment for achieving Oman Vision 2040.)
                 """
             else:
-                # Actual OpenAI integration code would go here
-                response_text = "API connection is disabled in the demo version. The default text was displayed."
+                # --- LIVE API MODE ---
+                try:
+                    client = OpenAI(api_key=api_key)
 
+                    # Define the Coach's personality (System Prompt)
+                    system_prompt = f"""
+                    You are an expert AI Executive Coach for C-level leaders and entrepreneurs. 
+                    Your goal is to provide strategic, actionable advice based on global business frameworks, 
+                    with a special focus on the {methodology} methodology. 
+                    The response MUST be primarily in **English**, but you must include one key strategic sentence or quote in **Arabic** or related to **Oman Vision 2040**.
+                    
+                    Structure your response with clear Markdown headings: 
+                    1. Diagnosis (Analyze the core problem).
+                    2. Strategic Recommendation (Suggest a high-level solution aligned with the framework).
+                    3. Action Plan (Provide 2-3 immediate steps). 
+                    
+                    The final takeaway must be a single, impactful, relevant quote.
+                    """
+
+                    completion = client.chat.completions.create(
+                        model="gpt-4o-mini", 
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_input}
+                        ]
+                    )
+
+                    response_text = completion.choices[0].message.content
+
+                except Exception as e:
+                    st.error("An API error occurred. Please check your API key or connection.")
+                    st.code(f"Error Details: {e}")
+                    response_text = "ERROR: Failed to connect to AI server. Please check the error box above for details."
+            
             # Display Output
             st.markdown(f'<div class="insight-card">{response_text}</div>', unsafe_allow_html=True)
             
@@ -153,6 +196,6 @@ if st.button("Get Consultation & Action Plan"):
             chart_data = {"Week 0": 10, "Week 2": 35, "Week 4": 70}
             st.bar_chart(chart_data)
 
-# --- 4. FOOTER ---
+# --- 5. FOOTER ---
 st.markdown("---")
 st.caption("© 2025 Kokoro Compass | Developed by AI Architect for the GLOBIS Technovate Era Event.")
