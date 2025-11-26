@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 import os
-from openai import OpenAI # Import the OpenAI library
+from openai import OpenAI 
 
 # --- 1. PAGE CONFIGURATION AND STYLING ---
 st.set_page_config(
@@ -51,17 +51,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 2. SECRETS LOADING (API KEY MANAGEMENT) ---
-# Retrieve API key from st.secrets. Checks for both uppercase and lowercase standards.
-
-# 1. Check for the common UPPERCASE environment variable standard
+# Check for both uppercase (standard for env vars) and lowercase (standard for Streamlit secrets)
 if "OPENAI_API_KEY" in st.secrets:
     api_key = st.secrets["OPENAI_API_KEY"]
-    
-# 2. Check for the standard Streamlit lowercase key (as fallback)
 elif "openai_api_key" in st.secrets:
     api_key = st.secrets["openai_api_key"]
-
-# 3. If neither is found, run in Demo Mode
 else:
     api_key = None
     
@@ -74,21 +68,8 @@ with st.sidebar:
     if api_key:
         st.success("API Key loaded securely. Ready for Live Mode.")
     else:
-        st.warning("Key not found in Streamlit Secrets. Running in Demo Mode.")
-        
-    st.divider()
-    # ... (Rest of sidebar code remains the same)
-
-# --- 3. SIDEBAR (CONFIGURATION AND ABOUT) ---
-with st.sidebar:
-    st.title("🧭 Kokoro Compass")
-    st.caption("Navigating Leadership in the Technovate Era") 
-    
-    # Show status based on secret loading
-    if api_key:
-        st.success("OpenAI API Key loaded securely.")
-    else:
-        st.warning("Key not found in Streamlit Secrets. Running in Demo Mode.")
+        # The key is not found, so the app runs in demo mode
+        st.warning("Key not found in Streamlit Secrets. Running in Demo Mode.") 
     
     st.divider()
     
@@ -177,34 +158,33 @@ if st.button("Get Consultation & Action Plan"):
                 """
             else:
                 # --- LIVE API MODE ---
-try:
-    client = OpenAI(api_key=api_key)
+                try:
+                    client = OpenAI(api_key=api_key)
 
-    # Define the Coach's personality (System Prompt) - IMPROVED VERSION
-    system_prompt = f"""
-    You are an expert AI Executive Coach for C-level leaders and entrepreneurs. 
-    
-    You MUST use the **{methodology}** framework for your entire analysis. 
-    If the user's input mentions a different framework (e.g., if the user wrote 'Kokorozashi' but the selected framework is 'Blue Ocean Strategy'), you MUST **prioritize and use the selected framework: {methodology}**.
-    
-    The response MUST be primarily in **English**, but you must include one key strategic sentence or quote in **Arabic** or related to **Oman Vision 2040**.
-    
-    Structure your response with clear Markdown headings: 
-    1. Diagnosis (Analyze the core problem).
-    2. Strategic Recommendation (Suggest a high-level solution aligned with the {methodology} framework).
-    3. Action Plan (Provide 2-3 immediate steps). 
-    
-    The final takeaway must be a single, impactful, relevant quote.
-    """
+                    # Define the Coach's personality (System Prompt) - IMPROVED VERSION
+                    system_prompt = f"""
+                    You are an expert AI Executive Coach for C-level leaders and entrepreneurs. 
+                    
+                    You MUST use the **{methodology}** framework for your entire analysis. 
+                    If the user's input mentions a different framework (e.g., if the user wrote 'Kokorozashi' but the selected framework is 'Blue Ocean Strategy'), you MUST **prioritize and use the selected framework: {methodology}**.
+                    
+                    The response MUST be primarily in **English**, but you must include one key strategic sentence or quote in **Arabic** or related to **Oman Vision 2040**.
+                    
+                    Structure your response with clear Markdown headings: 
+                    1. Diagnosis (Analyze the core problem).
+                    2. Strategic Recommendation (Suggest a high-level solution aligned with the {methodology} framework).
+                    3. Action Plan (Provide 2-3 immediate steps). 
+                    
+                    The final takeaway must be a single, impactful, relevant quote.
+                    """
 
-    completion = client.chat.completions.create(
-        model="gpt-4o-mini", 
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_input}
-        ]
-    )
-    # ... بقیه کد (استخراج پاسخ و مدیریت خطا)
+                    completion = client.chat.completions.create(
+                        model="gpt-4o-mini", 
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_input}
+                        ]
+                    )
 
                     response_text = completion.choices[0].message.content
 
