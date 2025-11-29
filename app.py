@@ -68,7 +68,6 @@ with st.sidebar:
     if api_key:
         st.success("API Key loaded securely. Ready for Live Mode.")
     else:
-        # The key is not found, so the app runs in demo mode
         st.warning("Key not found in Streamlit Secrets. Running in Demo Mode.") 
     
     st.divider()
@@ -161,13 +160,15 @@ if st.button("Get Consultation & Action Plan"):
                 try:
                     client = OpenAI(api_key=api_key)
 
-                    # Define the Coach's personality (System Prompt) - IMPROVED VERSION
+                    # Define the Coach's personality (System Prompt) - FINAL VERSION
                     system_prompt = f"""
                     You are an expert AI Executive Coach for C-level leaders and entrepreneurs. 
                     
                     You MUST use the **{methodology}** framework for your entire analysis. 
-                    If the user's input mentions a different framework (e.g., if the user wrote 'Kokorozashi' but the selected framework is 'Blue Ocean Strategy'), you MUST **prioritize and use the selected framework: {methodology}**.
+                    If the user's input mentions a different framework, you MUST **prioritize and use the selected framework: {methodology}**.
                     
+                    For all advice, ensure that the final recommendation is culturally relevant for the GCC context. You may draw upon the leadership philosophies found in influential regional texts, such as **'Haya fi al-Idara' (Ghazi Al-Gosaibi)**, to provide nuanced guidance on administration and motivation.
+
                     The response MUST be primarily in **English**, but you must include one key strategic sentence or quote in **Arabic** or related to **Oman Vision 2040**.
                     
                     Structure your response with clear Markdown headings: 
